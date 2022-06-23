@@ -59,9 +59,9 @@ func main() {
 
 	// Event
 
-	eventRepository := database.NewRepository()
-	eventService := app.NewService(&eventRepository)
-	eventController := controllers.NewEventController(&eventService)
+	eventsRepository := database.NewEventsRepository(&sess)
+	eventService := app.NewEventsService(&eventsRepository)
+	eventController := controllers.NewEventsController(&eventService)
 
 	// HTTP Server
 	errHttp := http.Server(

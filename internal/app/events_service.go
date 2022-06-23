@@ -5,25 +5,25 @@ import (
 	"github.com/test_server/internal/infra/database"
 )
 
-type Service interface {
-	FindAll() ([]domain.Event, error)
-	FindOne(id uint64) (*domain.Event, error)
+type EventsService interface {
+	FindAll(page uint, pageSize uint) ([]domain.Events, error)
+	FindOne(id uint64) (*domain.Events, error)
 }
 
-type service struct {
-	repo *database.Repository
+type eventsService struct {
+	repo *database.EventsRepository
 }
 
-func NewService(r *database.Repository) Service {
-	return &service{
+func NewEventsService(r *database.EventsRepository) EventsService {
+	return &eventsService{
 		repo: r,
 	}
 }
 
-func (s *service) FindAll() ([]domain.Event, error) {
-	return (*s.repo).FindAll()
+func (s *eventsService) FindAll(page uint, pageSize uint) ([]domain.Events, error) {
+	return (*s.repo).FindAll(page, pageSize, false)
 }
 
-func (s *service) FindOne(id uint64) (*domain.Event, error) {
-	return (*s.repo).FindOne(id)
+func (s *eventsService) FindOne(id uint64) (*domain.Events, error) {
+	return (*s.repo).FindOne(id, false)
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/test_server/internal/infra/http/controllers"
 )
 
-func Router(eventController *controllers.EventController) http.Handler {
+func Router(eventController *controllers.EventsController) http.Handler {
 	router := chi.NewRouter()
 
 	// Health
@@ -35,10 +35,10 @@ func Router(eventController *controllers.EventController) http.Handler {
 	return router
 }
 
-func AddEventRoutes(router *chi.Router, eventController *controllers.EventController) {
+func AddEventRoutes(router *chi.Router, eventController *controllers.EventsController) {
 	(*router).Route("/events", func(apiRouter chi.Router) {
 		apiRouter.Get(
-			"/",
+			"/page/{page}",
 			eventController.FindAll(),
 		)
 		apiRouter.Get(

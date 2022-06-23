@@ -1,7 +1,7 @@
 package domain
 
-type Event struct {
-	ID               uint    `db:"id,omitempty"`
+type Events struct {
+	Id               uint    `db:"id,omitempty"`
 	Title            string  `db:"Title"`
 	ShortDescription string  `db:"Short Description"`
 	Description      string  `db:"Description"`
