@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/test_server/config"
 	"github.com/test_server/internal/app"
 	"github.com/test_server/internal/infra/database"
 	"github.com/upper/db/v4/adapter/postgresql"
@@ -16,25 +17,22 @@ import (
 	"github.com/test_server/internal/infra/http/controllers"
 )
 
-//database
-var settings = postgresql.ConnectionURL{
-	Database: `training`,
-	Host:     `localhost:54322`,
-	User:     `postgres`,
-	Password: `root`,
-}
-
-// @title                       Test Server
-// @version                     0.1.0
-// @description                 Test Server boilerplate
 func main() {
 
-	sess, err := postgresql.Open(settings)
+	var conf = config.GetConfiguration()
+
+	sess, err := postgresql.Open(
+		postgresql.ConnectionURL{
+			User:     conf.DatabaseUser,
+			Host:     conf.DatabaseHost,
+			Password: conf.DatabasePassword,
+			Database: conf.DatabaseName,
+		})
 	if err != nil {
 		log.Fatal("Open: ", err)
 	}
 	defer sess.Close()
-	fmt.Printf("Connected to %q with DSN:\n\t%q\n", sess.Name(), settings)
+	log.Printf("Connected to %q with DSN:\n\t%q\n", sess.Name(), conf.DatabaseHost)
 
 	exitCode := 0
 	ctx, cancel := context.WithCancel(context.Background())
