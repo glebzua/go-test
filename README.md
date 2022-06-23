@@ -4,9 +4,12 @@
 
 `http://localhost:8081/ping`
 
-## Events List
+## Upcoming Events List
 
-`http://localhost:8081/v1/events`
+`http://localhost:8081/v1/events/upcoming/{page}`
+
+## all Events List
+`http://localhost:8081/v1/events/all/{page}`
 
 ## Event (by ID)
 

@@ -12,6 +12,7 @@ type EventsDto struct {
 	Images           string  `json:"Images"`
 	Preview          string  `json:"Preview"`
 	Date             string  `json:"Date"`
+	IsEnded          bool    `json:"IsEnded"`
 }
 
 func MapDomainToEventsDto(events *domain.Events) *EventsDto {
@@ -25,6 +26,7 @@ func MapDomainToEventsDto(events *domain.Events) *EventsDto {
 		Images:           events.Images,
 		Preview:          events.Preview,
 		Date:             events.Date,
+		IsEnded:          events.IsEnded,
 	}
 
 }

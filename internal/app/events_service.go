@@ -7,6 +7,7 @@ import (
 
 type EventsService interface {
 	FindAll(page uint, pageSize uint) ([]domain.Events, error)
+	FindUpcoming(page uint, pageSize uint) ([]domain.Events, error)
 	FindOne(id uint64) (*domain.Events, error)
 }
 
@@ -21,7 +22,11 @@ func NewEventsService(r *database.EventsRepository) EventsService {
 }
 
 func (s *eventsService) FindAll(page uint, pageSize uint) ([]domain.Events, error) {
-	return (*s.repo).FindAll(page, pageSize, false)
+	return (*s.repo).FindAll(page, pageSize, false) // todo need  show all include deleted
+}
+func (s *eventsService) FindUpcoming(page uint, pageSize uint) ([]domain.Events, error) {
+	return (*s.repo).FindUpcoming(page, pageSize, false) // todo need  show only upcoming
+
 }
 
 func (s *eventsService) FindOne(id uint64) (*domain.Events, error) {

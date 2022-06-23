@@ -38,8 +38,12 @@ func Router(eventController *controllers.EventsController) http.Handler {
 func AddEventRoutes(router *chi.Router, eventController *controllers.EventsController) {
 	(*router).Route("/events", func(apiRouter chi.Router) {
 		apiRouter.Get(
-			"/page/{page}",
+			"/all/{page}",
 			eventController.FindAll(),
+		)
+		apiRouter.Get(
+			"/upcoming/{page}",
+			eventController.FindUpcoming(),
 		)
 		apiRouter.Get(
 			"/{id}",

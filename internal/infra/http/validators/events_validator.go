@@ -19,18 +19,18 @@ func NewEventsValidator() *EventsValidator {
 }
 
 func (t EventsValidator) ValidateAndMap(r *http.Request) (*domain.Events, error) {
-	var cattleResource eventsRequest
-	err := json.NewDecoder(r.Body).Decode(&cattleResource)
+	var eventsResource eventsRequest
+	err := json.NewDecoder(r.Body).Decode(&eventsResource)
 	if err != nil {
 		log.Print(err)
 		return nil, err
 	}
 
-	err = t.validator.Struct(cattleResource)
+	err = t.validator.Struct(eventsResource)
 	if err != nil {
 		log.Print(err)
 		return nil, err
 	}
 
-	return mapEventsRequestToDomain(&cattleResource), nil
+	return mapEventsRequestToDomain(&eventsResource), nil
 }

@@ -5,22 +5,26 @@ import (
 	"github.com/test_server/internal/domain"
 	"github.com/upper/db/v4"
 	"log"
+	"time"
 )
 
 type events struct {
-	Id               uint    `db:"id,omitempty"`
-	Title            string  `db:"Title"`
-	ShortDescription string  `db:"Short Description"`
-	Description      string  `db:"Description"`
-	Longitude        float64 `db:"Longitude"`
-	Latitude         float64 `db:"Latitude"`
-	Images           string  `db:"Images"`
-	Preview          string  `db:"Preview"`
-	Date             string  `db:"Date"`
+	Id               uint      `db:"id,omitempty"`
+	Title            string    `db:"Title"`
+	ShortDescription string    `db:"Short Description"`
+	Description      string    `db:"Description"`
+	Longitude        float64   `db:"Longitude"`
+	Latitude         float64   `db:"Latitude"`
+	Images           string    `db:"Images"`
+	Preview          string    `db:"Preview"`
+	Date             string    `db:"Date"`
+	IsEnded          bool      `db:"isEnded"`
+	DeletedDate      time.Time `db:"deleted_date,omitempty"`
 }
 
 type EventsRepository interface {
 	FindAll(page uint, pageSize uint, showDeleted bool) ([]domain.Events, error)
+	FindUpcoming(page uint, pageSize uint, showDeleted bool) ([]domain.Events, error)
 	FindOne(id uint64, showDeleted bool) (*domain.Events, error)
 }
 
@@ -37,32 +41,41 @@ func NewEventsRepository(dbSession *db.Session) EventsRepository {
 }
 
 func (r *eventsRepository) FindAll(page uint, pageSize uint, showDeleted bool) ([]domain.Events, error) {
-	var clt []events
-	err := r.coll.Find(softDelCond(nil, showDeleted)).Paginate(pageSize).Page(page).All(&clt)
+	var event []events
+	err := r.coll.Find(isDeleted(nil, showDeleted)).Paginate(pageSize).Page(page).All(&event)
 	if err != nil {
 		log.Print(err)
 		return nil, err
 	}
 
-	return mapEventsDbModelToDomainCollection(clt), nil
+	return mapEventsDbModelToDomainCollection(event), nil
 }
+func (r *eventsRepository) FindUpcoming(page uint, pageSize uint, showDeleted bool) ([]domain.Events, error) {
+	var event []events
+	err := r.coll.Find(isDeleted(nil, showDeleted)).Paginate(pageSize).Page(page).All(&event)
+	if err != nil {
+		log.Print(err)
+		return nil, err
+	}
 
+	return mapEventsDbModelToDomainCollection(event), nil
+}
 func (r *eventsRepository) FindOne(id uint64, showDeleted bool) (*domain.Events, error) {
-	var ctl events
-	err := r.coll.Find(softDelCond(db.Cond{"id": id}, showDeleted)).One(&ctl)
+	var event events
+	err := r.coll.Find(isDeleted(db.Cond{"id": id}, showDeleted)).One(&event)
 	if err != nil {
 		return nil, fmt.Errorf("repository FindOneCattle: %w", err)
 	}
 
-	return mapEventsDbModelToDomain(&ctl), nil
+	return mapEventsDbModelToDomain(&event), nil
 }
 
 func mapEventsDbModelToDomainCollection(events []events) []domain.Events {
 	var result []domain.Events
 
-	for _, c := range events {
-		newCtl := mapEventsDbModelToDomain(&c)
-		result = append(result, *newCtl)
+	for _, e := range events {
+		newEvent := mapEventsDbModelToDomain(&e)
+		result = append(result, *newEvent)
 	}
 	return result
 }
@@ -78,6 +91,8 @@ func mapEventsDbModelToDomain(events *events) *domain.Events {
 		Images:           events.Images,
 		Preview:          events.Preview,
 		Date:             events.Date,
+		IsEnded:          events.IsEnded,
+		DeletedDate:      events.DeletedDate,
 	}
 
 }

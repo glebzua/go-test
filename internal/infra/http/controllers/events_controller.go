@@ -46,6 +46,29 @@ func (c *EventsController) FindAll() http.HandlerFunc {
 	}
 }
 
+func (c *EventsController) FindUpcoming() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		page, err := strconv.Atoi(chi.URLParam(r, "page"))
+		if err != nil {
+			log.Print(err)
+			badRequest(w, err)
+			return
+		}
+
+		events, err := (*c.eventsService).FindUpcoming(uint(page), 20)
+		if err != nil {
+			log.Printf("EventController.FindAll(): %s", err)
+			return
+		}
+
+		err = success(w, resources.MapDomainToEventsDtoCollection(events))
+		if err != nil {
+			log.Print(err)
+
+		}
+	}
+}
+
 func (c *EventsController) FindOne() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
