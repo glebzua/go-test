@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/test_server/internal/app"
+	"github.com/test_server/internal/infra/database"
 	"github.com/upper/db/v4/adapter/postgresql"
 	"log"
 	"os"
@@ -10,7 +12,6 @@ import (
 	"runtime/debug"
 	"syscall"
 
-	"github.com/test_server/internal/domain/event"
 	"github.com/test_server/internal/infra/http"
 	"github.com/test_server/internal/infra/http/controllers"
 )
@@ -60,8 +61,8 @@ func main() {
 
 	// Event
 
-	eventRepository := event.NewRepository()
-	eventService := event.NewService(&eventRepository)
+	eventRepository := database.NewRepository()
+	eventService := app.NewService(&eventRepository)
 	eventController := controllers.NewEventController(&eventService)
 
 	// HTTP Server

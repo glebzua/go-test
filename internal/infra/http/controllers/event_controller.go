@@ -3,16 +3,16 @@ package controllers
 import (
 	"fmt"
 	"github.com/go-chi/chi"
-	"github.com/test_server/internal/domain/event"
+	"github.com/test_server/internal/app"
 	"net/http"
 	"strconv"
 )
 
 type EventController struct {
-	service *event.Service
+	service *app.Service
 }
 
-func NewEventController(s *event.Service) *EventController {
+func NewEventController(s *app.Service) *EventController {
 	return &EventController{
 		service: s,
 	}

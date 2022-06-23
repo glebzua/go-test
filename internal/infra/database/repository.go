@@ -1,6 +1,7 @@
-package event
+package database
 
 import (
+	"github.com/test_server/internal/domain"
 	"github.com/upper/db/v4"
 	"github.com/upper/db/v4/adapter/postgresql"
 	"log"
@@ -14,8 +15,8 @@ var settings = postgresql.ConnectionURL{
 }
 
 type Repository interface {
-	FindAll() ([]Event, error)
-	FindOne(id uint64) (*Event, error)
+	FindAll() ([]domain.Event, error)
+	FindOne(id uint64) (*domain.Event, error)
 }
 
 const EventsCount uint64 = 8
@@ -36,8 +37,8 @@ func NewRepository() Repository {
 	return &repository{}
 }
 
-func (r *repository) FindAll() ([]Event, error) {
-	events := make([]Event, EventsCount)
+func (r *repository) FindAll() ([]domain.Event, error) {
+	events := make([]domain.Event, EventsCount)
 
 	sess, err := postgresql.Open(settings)
 	if err != nil {
@@ -49,8 +50,8 @@ func (r *repository) FindAll() ([]Event, error) {
 	return events, nil
 }
 
-func (r *repository) FindOne(id uint64) (*Event, error) {
-	var entity Event
+func (r *repository) FindOne(id uint64) (*domain.Event, error) {
+	var entity domain.Event
 	sess, err := postgresql.Open(settings)
 	if err != nil {
 		log.Fatal("Open: ", err)

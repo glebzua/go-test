@@ -1,4 +1,4 @@
-package event
+package domain
 
 type Event struct {
 	ID               uint    `db:"id,omitempty"`
