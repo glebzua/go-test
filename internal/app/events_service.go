@@ -22,10 +22,10 @@ func NewEventsService(r *database.EventsRepository) EventsService {
 }
 
 func (s *eventsService) FindAll(page uint, pageSize uint) ([]domain.Events, error) {
-	return (*s.repo).FindAll(page, pageSize, false) // todo need  show all include deleted
+	return (*s.repo).FindAll(page, pageSize)
 }
 func (s *eventsService) FindUpcoming(page uint, pageSize uint) ([]domain.Events, error) {
-	return (*s.repo).FindUpcoming(page, pageSize, false) // todo need  show only upcoming
+	return (*s.repo).FindUpcoming(page, pageSize, false) // todo need  show only upcaming
 
 }
 

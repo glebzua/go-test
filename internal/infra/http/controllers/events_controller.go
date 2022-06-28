@@ -57,7 +57,7 @@ func (c *EventsController) FindUpcoming() http.HandlerFunc {
 
 		events, err := (*c.eventsService).FindUpcoming(uint(page), 20)
 		if err != nil {
-			log.Printf("EventController.FindAll(): %s", err)
+			log.Printf("EventController.FindUpcoming(): %s", err)
 			return
 		}
 

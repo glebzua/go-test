@@ -19,11 +19,11 @@ type events struct {
 	Preview          string    `db:"Preview"`
 	Date             string    `db:"Date"`
 	IsEnded          bool      `db:"isEnded"`
-	DeletedDate      time.Time `db:"deleted_date,omitempty"`
+	DeletedDate      time.Time `db:"deletedDate"`
 }
 
 type EventsRepository interface {
-	FindAll(page uint, pageSize uint, showDeleted bool) ([]domain.Events, error)
+	FindAll(page uint, pageSize uint) ([]domain.Events, error)
 	FindUpcoming(page uint, pageSize uint, showDeleted bool) ([]domain.Events, error)
 	FindOne(id uint64, showDeleted bool) (*domain.Events, error)
 }
@@ -40,24 +40,24 @@ func NewEventsRepository(dbSession *db.Session) EventsRepository {
 	}
 }
 
-func (r *eventsRepository) FindAll(page uint, pageSize uint, showDeleted bool) ([]domain.Events, error) {
+func (r *eventsRepository) FindAll(page uint, pageSize uint) ([]domain.Events, error) {
 	var event []events
-	err := r.coll.Find(isDeleted(nil, showDeleted)).Paginate(pageSize).Page(page).All(&event)
+	err := r.coll.Find().Paginate(pageSize).Page(page).All(&event)
 	if err != nil {
 		log.Print(err)
 		return nil, err
 	}
-
 	return mapEventsDbModelToDomainCollection(event), nil
 }
 func (r *eventsRepository) FindUpcoming(page uint, pageSize uint, showDeleted bool) ([]domain.Events, error) {
 	var event []events
 	err := r.coll.Find(isDeleted(nil, showDeleted)).Paginate(pageSize).Page(page).All(&event)
 	if err != nil {
+
 		log.Print(err)
 		return nil, err
 	}
-
+	//delCond := db.Cond{"deletedDate IS": nil}
 	return mapEventsDbModelToDomainCollection(event), nil
 }
 func (r *eventsRepository) FindOne(id uint64, showDeleted bool) (*domain.Events, error) {
@@ -72,7 +72,6 @@ func (r *eventsRepository) FindOne(id uint64, showDeleted bool) (*domain.Events,
 
 func mapEventsDbModelToDomainCollection(events []events) []domain.Events {
 	var result []domain.Events
-
 	for _, e := range events {
 		newEvent := mapEventsDbModelToDomain(&e)
 		result = append(result, *newEvent)

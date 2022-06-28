@@ -13,5 +13,5 @@ type Events struct {
 	Preview          string    `db:"Preview"`
 	Date             string    `db:"Date"`
 	IsEnded          bool      `db:"isEnded"`
-	DeletedDate      time.Time `db:"deleted_date,omitempty"`
+	DeletedDate      time.Time `db:"deletedDate"`
 }

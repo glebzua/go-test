@@ -21,6 +21,7 @@ func NewEventsValidator() *EventsValidator {
 func (t EventsValidator) ValidateAndMap(r *http.Request) (*domain.Events, error) {
 	var eventsResource eventsRequest
 	err := json.NewDecoder(r.Body).Decode(&eventsResource)
+	log.Print(eventsResource)
 	if err != nil {
 		log.Print(err)
 		return nil, err
