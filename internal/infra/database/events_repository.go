@@ -28,8 +28,6 @@ type EventsRepository interface {
 	FindOne(id uint64, showDeleted bool) (*domain.Events, error)
 }
 
-const EventsCount uint64 = 8
-
 type eventsRepository struct {
 	coll db.Collection
 }
@@ -51,20 +49,20 @@ func (r *eventsRepository) FindAll(page uint, pageSize uint) ([]domain.Events, e
 }
 func (r *eventsRepository) FindUpcoming(page uint, pageSize uint, showDeleted bool) ([]domain.Events, error) {
 	var event []events
-	err := r.coll.Find(isDeleted(nil, showDeleted)).Paginate(pageSize).Page(page).All(&event)
+	err := r.coll.Find(isDeleted(db.Cond{"isEnded": false}, showDeleted)).Paginate(pageSize).Page(page).All(&event)
 	if err != nil {
 
 		log.Print(err)
 		return nil, err
 	}
 	//delCond := db.Cond{"deletedDate IS": nil}
-	return mapEventsDbModelToDomainCollection(event), nil
+	return mapAllEventsDbModelToDomainCollection(event), nil
 }
 func (r *eventsRepository) FindOne(id uint64, showDeleted bool) (*domain.Events, error) {
 	var event events
 	err := r.coll.Find(isDeleted(db.Cond{"id": id}, showDeleted)).One(&event)
 	if err != nil {
-		return nil, fmt.Errorf("repository FindOneCattle: %w", err)
+		return nil, fmt.Errorf("repository FindOneEvent: %w", err)
 	}
 
 	return mapEventsDbModelToDomain(&event), nil
@@ -80,6 +78,30 @@ func mapEventsDbModelToDomainCollection(events []events) []domain.Events {
 }
 
 func mapEventsDbModelToDomain(events *events) *domain.Events {
+	return &domain.Events{
+		Id:               events.Id,
+		Title:            events.Title,
+		ShortDescription: events.ShortDescription,
+		Description:      events.Description,
+		Longitude:        events.Longitude,
+		Latitude:         events.Latitude,
+		Images:           events.Images,
+		Preview:          events.Preview,
+		Date:             events.Date,
+		IsEnded:          events.IsEnded,
+	}
+
+}
+func mapAllEventsDbModelToDomainCollection(events []events) []domain.Events {
+	var result []domain.Events
+	for _, e := range events {
+		newEvent := mapAllEventsDbModelToDomain(&e)
+		result = append(result, *newEvent)
+	}
+	return result
+}
+
+func mapAllEventsDbModelToDomain(events *events) *domain.Events {
 	return &domain.Events{
 		Id:               events.Id,
 		Title:            events.Title,

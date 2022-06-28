@@ -25,7 +25,7 @@ func (s *eventsService) FindAll(page uint, pageSize uint) ([]domain.Events, erro
 	return (*s.repo).FindAll(page, pageSize)
 }
 func (s *eventsService) FindUpcoming(page uint, pageSize uint) ([]domain.Events, error) {
-	return (*s.repo).FindUpcoming(page, pageSize, false) // todo need  show only upcaming
+	return (*s.repo).FindUpcoming(page, pageSize, false)
 
 }
 

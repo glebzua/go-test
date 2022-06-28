@@ -38,7 +38,7 @@ func (c *EventsController) FindAll() http.HandlerFunc {
 			return
 		}
 
-		err = success(w, resources.MapDomainToEventsDtoCollection(events))
+		err = success(w, resources.MapDomainToAllEventsDtoCollection(events))
 		if err != nil {
 			log.Print(err)
 
