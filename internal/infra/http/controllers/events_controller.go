@@ -96,3 +96,27 @@ func (c *EventsController) FindOne() http.HandlerFunc {
 		}
 	}
 }
+
+func (c *EventsController) Add() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		event, err := c.validator.ValidateAndMap(r)
+		if err != nil {
+			log.Print(err)
+			badRequest(w, err)
+			return
+		}
+
+		addedEvent, err := (*c.eventsService).AddEvent(event)
+		if err != nil {
+			log.Print(err)
+			internalServerError(w, err)
+			return
+		}
+
+		err = success(w, resources.MapDomainToEventsDto(addedEvent))
+		if err != nil {
+			log.Print(err)
+		}
+	}
+}

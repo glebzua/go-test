@@ -11,7 +11,7 @@ import (
 type events struct {
 	Id               uint      `db:"id,omitempty"`
 	Title            string    `db:"Title"`
-	ShortDescription string    `db:"Short Description"`
+	ShortDescription string    `db:"ShortDescription"`
 	Description      string    `db:"Description"`
 	Longitude        float64   `db:"Longitude"`
 	Latitude         float64   `db:"Latitude"`
@@ -19,13 +19,14 @@ type events struct {
 	Preview          string    `db:"Preview"`
 	Date             string    `db:"Date"`
 	IsEnded          bool      `db:"isEnded"`
-	DeletedDate      time.Time `db:"deletedDate"`
+	DeletedDate      time.Time `db:"deletedDate,omitempty"`
 }
 
 type EventsRepository interface {
 	FindAll(page uint, pageSize uint) ([]domain.Events, error)
 	FindUpcoming(page uint, pageSize uint, showDeleted bool) ([]domain.Events, error)
 	FindOne(id uint64, showDeleted bool) (*domain.Events, error)
+	AddEvent(task *domain.Events) (*domain.Events, error)
 }
 
 type eventsRepository struct {
@@ -55,7 +56,6 @@ func (r *eventsRepository) FindUpcoming(page uint, pageSize uint, showDeleted bo
 		log.Print(err)
 		return nil, err
 	}
-	//delCond := db.Cond{"deletedDate IS": nil}
 	return mapAllEventsDbModelToDomainCollection(event), nil
 }
 func (r *eventsRepository) FindOne(id uint64, showDeleted bool) (*domain.Events, error) {
@@ -66,6 +66,15 @@ func (r *eventsRepository) FindOne(id uint64, showDeleted bool) (*domain.Events,
 	}
 
 	return mapEventsDbModelToDomain(&event), nil
+}
+func (r *eventsRepository) AddEvent(event *domain.Events) (*domain.Events, error) {
+	nEvent := mapDomainToEventDbModel(event)
+	err := r.coll.InsertReturning(nEvent)
+	if err != nil {
+		log.Print("InsertReturning err", err)
+		return nil, err
+	}
+	return mapEventsDbModelToDomain(nEvent), nil
 }
 
 func mapEventsDbModelToDomainCollection(events []events) []domain.Events {
@@ -116,4 +125,20 @@ func mapAllEventsDbModelToDomain(events *events) *domain.Events {
 		DeletedDate:      events.DeletedDate,
 	}
 
+}
+
+func mapDomainToEventDbModel(nEvent *domain.Events) *events {
+	return &events{
+		Id:               nEvent.Id,
+		Title:            nEvent.Title,
+		ShortDescription: nEvent.ShortDescription,
+		Description:      nEvent.Description,
+		Longitude:        nEvent.Longitude,
+		Latitude:         nEvent.Latitude,
+		Images:           nEvent.Images,
+		Preview:          nEvent.Preview,
+		Date:             nEvent.Date,
+		IsEnded:          nEvent.IsEnded,
+		DeletedDate:      nEvent.DeletedDate,
+	}
 }

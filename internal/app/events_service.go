@@ -9,6 +9,7 @@ type EventsService interface {
 	FindAll(page uint, pageSize uint) ([]domain.Events, error)
 	FindUpcoming(page uint, pageSize uint) ([]domain.Events, error)
 	FindOne(id uint64) (*domain.Events, error)
+	AddEvent(task *domain.Events) (*domain.Events, error)
 }
 
 type eventsService struct {
@@ -31,4 +32,7 @@ func (s *eventsService) FindUpcoming(page uint, pageSize uint) ([]domain.Events,
 
 func (s *eventsService) FindOne(id uint64) (*domain.Events, error) {
 	return (*s.repo).FindOne(id, false)
+}
+func (s *eventsService) AddEvent(event *domain.Events) (*domain.Events, error) {
+	return (*s.repo).AddEvent(event)
 }

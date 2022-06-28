@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/test_server/internal/infra/http/controllers"
 )
 
@@ -23,8 +24,9 @@ func Router(eventController *controllers.EventsController) http.Handler {
 	})
 
 	router.Group(func(apiRouter chi.Router) {
-		apiRouter.Use(middleware.RedirectSlashes)
-
+		apiRouter.Use(middleware.RedirectSlashes, cors.Handler(cors.Options{
+			AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		}))
 		apiRouter.Route("/v1", func(apiRouter chi.Router) {
 			AddEventRoutes(&apiRouter, eventController)
 
@@ -48,6 +50,10 @@ func AddEventRoutes(router *chi.Router, eventController *controllers.EventsContr
 		apiRouter.Get(
 			"/{id}",
 			eventController.FindOne(),
+		)
+		apiRouter.Post(
+			"/",
+			eventController.Add(),
 		)
 
 	})

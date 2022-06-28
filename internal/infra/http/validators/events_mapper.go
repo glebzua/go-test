@@ -8,7 +8,7 @@ import (
 type eventsRequest struct {
 	Id               uint      `json:"id,omitempty"`
 	Title            string    `json:"Title"`
-	ShortDescription string    `json:"Short Description"`
+	ShortDescription string    `json:"ShortDescription"`
 	Description      string    `json:"Description"`
 	Longitude        float64   `json:"Longitude"`
 	Latitude         float64   `json:"Latitude"`
