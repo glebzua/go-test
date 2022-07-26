@@ -6,15 +6,16 @@ import (
 	"github.com/test_server/config"
 	"github.com/test_server/internal/app"
 	"github.com/test_server/internal/infra/database"
+	"github.com/test_server/internal/infra/http"
+	"github.com/test_server/internal/infra/http/controllers"
+	"github.com/test_server/internal/infra/http/middlewares"
+	"github.com/upper/db/v4"
 	"github.com/upper/db/v4/adapter/postgresql"
 	"log"
 	"os"
 	"os/signal"
 	"runtime/debug"
 	"syscall"
-
-	"github.com/test_server/internal/infra/http"
-	"github.com/test_server/internal/infra/http/controllers"
 )
 
 func main() {
@@ -31,7 +32,12 @@ func main() {
 	if err != nil {
 		log.Fatal("Open: ", err)
 	}
-	defer sess.Close()
+	defer func(sess db.Session) {
+		err := sess.Close()
+		if err != nil {
+			log.Print("defer func sess.Close error:", err)
+		}
+	}(sess)
 	log.Printf("Connected to %q with DSN:\n\t%q\n", sess.Name(), conf.DatabaseHost)
 
 	exitCode := 0
@@ -57,17 +63,22 @@ func main() {
 		fmt.Printf("Sent cancel to all threads...")
 	}()
 
-	// Event
+	userRepository := database.NewUserRepository(&sess)
+	userService := app.NewUserService(&userRepository)
+	tokenService := app.NewTokenService([]byte(conf.AuthAccessKeySecret))
+	userController := controllers.NewUserController(&userService, &tokenService)
 
 	eventsRepository := database.NewEventsRepository(&sess)
 	eventService := app.NewEventsService(&eventsRepository)
 	eventController := controllers.NewEventsController(&eventService)
-
+	authMiddleware := middlewares.AuthMiddleware(tokenService)
 	// HTTP Server
 	errHttp := http.Server(
 		ctx,
 		http.Router(
+			userController,
 			eventController,
+			authMiddleware,
 		),
 	)
 
@@ -76,4 +87,5 @@ func main() {
 		exitCode = 2
 		return
 	}
+
 }

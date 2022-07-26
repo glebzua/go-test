@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/go-chi/chi"
 	"github.com/test_server/internal/app"
 	"github.com/test_server/internal/infra/http/resources"
@@ -9,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type EventsController struct {
@@ -38,11 +38,8 @@ func (c *EventsController) FindAll() http.HandlerFunc {
 			return
 		}
 
-		err = success(w, resources.MapDomainToAllEventsDtoCollection(events))
-		if err != nil {
-			log.Print(err)
+		success(w, resources.MapDomainToAllEventsDtoCollection(events))
 
-		}
 	}
 }
 
@@ -61,11 +58,8 @@ func (c *EventsController) FindUpcoming() http.HandlerFunc {
 			return
 		}
 
-		err = success(w, resources.MapDomainToEventsDtoCollection(events))
-		if err != nil {
-			log.Print(err)
+		success(w, resources.MapDomainToEventsDtoCollection(events))
 
-		}
 	}
 }
 
@@ -73,31 +67,27 @@ func (c *EventsController) FindOne() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 		if err != nil {
-			fmt.Printf("EventController.FindOne(): %s", err)
-			err = internalServerError(w, err)
-			if err != nil {
-				fmt.Printf("EventController.FindOne(): %s", err)
-			}
+			log.Print("eventsController FindOne ParseInt", err)
+			badRequest(w, err)
 			return
 		}
 		event, err := (*c.eventsService).FindOne(uint64(id))
 		if err != nil {
-			fmt.Printf("EventController.FindOne(): %s", err)
-			err = internalServerError(w, err)
-			if err != nil {
-				fmt.Printf("EventController.FindOne(): %s", err)
+			if strings.HasSuffix(err.Error(), "upper: no more rows in this result set") {
+				notFound(w, err)
+			} else {
+				internalServerError(w, err)
 			}
+			log.Print("eventsController FindOne error:", err)
 			return
 		}
 
-		err = success(w, resources.MapDomainToEventsDto(event))
-		if err != nil {
-			fmt.Printf("EventController.FindOne(): %s", err)
-		}
+		success(w, resources.MapDomainToEventsDto(event))
+
 	}
 }
 
-func (c *EventsController) Add() http.HandlerFunc {
+func (c *EventsController) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		event, err := c.validator.ValidateAndMap(r)
@@ -107,16 +97,14 @@ func (c *EventsController) Add() http.HandlerFunc {
 			return
 		}
 
-		addedEvent, err := (*c.eventsService).AddEvent(event)
+		addedEvent, err := (*c.eventsService).Create(event)
 		if err != nil {
 			log.Print(err)
 			internalServerError(w, err)
 			return
 		}
 
-		err = success(w, resources.MapDomainToEventsDto(addedEvent))
-		if err != nil {
-			log.Print(err)
-		}
+		success(w, resources.MapDomainToEventsDto(addedEvent))
+
 	}
 }

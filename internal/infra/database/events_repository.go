@@ -26,7 +26,7 @@ type EventsRepository interface {
 	FindAll(page uint, pageSize uint) ([]domain.Events, error)
 	FindUpcoming(page uint, pageSize uint, showDeleted bool) ([]domain.Events, error)
 	FindOne(id uint64, showDeleted bool) (*domain.Events, error)
-	AddEvent(task *domain.Events) (*domain.Events, error)
+	Create(task *domain.Events) (*domain.Events, error)
 }
 
 type eventsRepository struct {
@@ -67,7 +67,7 @@ func (r *eventsRepository) FindOne(id uint64, showDeleted bool) (*domain.Events,
 
 	return mapEventsDbModelToDomain(&event), nil
 }
-func (r *eventsRepository) AddEvent(event *domain.Events) (*domain.Events, error) {
+func (r *eventsRepository) Create(event *domain.Events) (*domain.Events, error) {
 	nEvent := mapDomainToEventDbModel(event)
 	err := r.coll.InsertReturning(nEvent)
 	if err != nil {
