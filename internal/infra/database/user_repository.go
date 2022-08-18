@@ -17,7 +17,7 @@ type user struct {
 	Passhash    []byte     `db:"passhash,omitempty"`
 	Role        int        `db:"role,omitempty"`
 	CreatedDate *time.Time `db:"created_date,omitempty"`
-	DeletedDate *time.Time `db:"deleted_date"`
+	DeletedDate *time.Time `db:"deletedDate"`
 }
 
 type UserRepository interface {
@@ -96,7 +96,12 @@ func (r *userRepository) Update(user *domain.User) (*domain.User, error) {
 }
 
 func (r *userRepository) Delete(userId int64) error {
-	err := r.coll.Find(userId).Update(map[string]interface{}{"deleted_date": time.Now()})
+	var user user
+	err := r.coll.Find(isDeleted(db.Cond{"id": userId}, false)).One(&user)
+	if err != nil {
+		return fmt.Errorf("eventsRepository Delete: %w", err)
+	}
+	err = r.coll.Find(userId).Update(map[string]interface{}{"deletedDate": time.Now()})
 	if err != nil {
 		return fmt.Errorf("userRepository DeleteUser: %w", err)
 	}

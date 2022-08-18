@@ -34,3 +34,31 @@ func mapEventsRequestToDomain(eventsRequest *eventsRequest) *domain.Events {
 	events.DeletedDate = eventsRequest.DeletedDate
 	return &events
 }
+
+type eventsUpdateRequest struct {
+	Title            string    `json:"Title"`
+	ShortDescription string    `json:"ShortDescription"`
+	Description      string    `json:"Description"`
+	Longitude        float64   `json:"Longitude"`
+	Latitude         float64   `json:"Latitude"`
+	Images           string    `json:"Images"`
+	Preview          string    `json:"Preview"`
+	Date             string    `json:"Date"`
+	IsEnded          bool      `json:"isEnded"`
+	DeletedDate      time.Time `json:"DeletedDate"`
+}
+
+func mapEventsUpdateRequestToDomain(request *eventsUpdateRequest) *domain.Events {
+	return &domain.Events{
+		Title:            request.Title,
+		ShortDescription: request.ShortDescription,
+		Description:      request.Description,
+		Longitude:        request.Longitude,
+		Latitude:         request.Latitude,
+		Images:           request.Images,
+		Preview:          request.Preview,
+		Date:             request.Date,
+		IsEnded:          request.IsEnded,
+		DeletedDate:      request.DeletedDate,
+	}
+}

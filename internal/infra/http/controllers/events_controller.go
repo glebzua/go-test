@@ -12,14 +12,16 @@ import (
 )
 
 type EventsController struct {
-	eventsService *app.EventsService
-	validator     *validators.EventsValidator
+	eventsService         *app.EventsService
+	validator             *validators.EventsValidator
+	eventsUpdateValidator *validators.EventsUpdateValidator
 }
 
 func NewEventsController(s *app.EventsService) *EventsController {
 	return &EventsController{
-		eventsService: s,
-		validator:     validators.NewEventsValidator(),
+		eventsService:         s,
+		validator:             validators.NewEventsValidator(),
+		eventsUpdateValidator: validators.NewEventsUpdateValidator(),
 	}
 }
 
@@ -105,6 +107,54 @@ func (c *EventsController) Create() http.HandlerFunc {
 		}
 
 		success(w, resources.MapDomainToEventsDto(addedEvent))
+
+	}
+}
+
+func (c *EventsController) Delete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+		if err != nil {
+			log.Print(err)
+			badRequest(w, err)
+			return
+		}
+
+		err = (*c.eventsService).Delete(id)
+		if err != nil {
+			log.Print(err)
+			internalServerError(w, err)
+			return
+		}
+
+		ok(w)
+	}
+}
+
+func (c *EventsController) Update() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Println(r)
+		event, err := c.eventsUpdateValidator.ValidateAndMap(r)
+		if err != nil {
+			log.Print(err)
+			badRequest(w, err)
+			return
+		}
+		id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+		if err != nil {
+			log.Print(err)
+			badRequest(w, err)
+			return
+		}
+
+		event.Id = uint(id)
+		updatedEvent, err := (*c.eventsService).Update(event)
+		if err != nil {
+			log.Print(err)
+			internalServerError(w, err)
+			return
+		}
+		success(w, resources.MapDomainToEventsDto(updatedEvent))
 
 	}
 }

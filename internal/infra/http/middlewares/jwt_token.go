@@ -32,11 +32,12 @@ func AuthMiddleware(s app.TokenService) func(http.Handler) http.Handler {
 func AdminOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := GetAuthorizedUser(r)
-		if user == nil {
-			log.Println("Warning! User authorization check is turned off!")
-			next.ServeHTTP(w, r)
-			return
-		} else if user.UserRole == domain.ROLE_ADMIN {
+		//if user == nil {
+		//	log.Println("Warning! User authorization check is turned off!")
+		//	next.ServeHTTP(w, r)
+		//	return
+		//} else
+		if user.UserRole == domain.ROLE_ADMIN {
 			next.ServeHTTP(w, r)
 			return
 		}

@@ -27,6 +27,8 @@ type EventsRepository interface {
 	FindUpcoming(page uint, pageSize uint, showDeleted bool) ([]domain.Events, error)
 	FindOne(id uint64, showDeleted bool) (*domain.Events, error)
 	Create(task *domain.Events) (*domain.Events, error)
+	Delete(eventId int64) error
+	Update(user *domain.Events) (*domain.Events, error)
 }
 
 type eventsRepository struct {
@@ -50,7 +52,8 @@ func (r *eventsRepository) FindAll(page uint, pageSize uint) ([]domain.Events, e
 }
 func (r *eventsRepository) FindUpcoming(page uint, pageSize uint, showDeleted bool) ([]domain.Events, error) {
 	var event []events
-	err := r.coll.Find(isDeleted(db.Cond{"isEnded": false}, showDeleted)).Paginate(pageSize).Page(page).All(&event)
+	//ct := fmt.Sprint(time.Now())
+	err := r.coll.Find(isDeleted(db.Cond{"Date >": time.Now()}, showDeleted)).Paginate(pageSize).Page(page).All(&event)
 	if err != nil {
 
 		log.Print(err)
@@ -75,6 +78,30 @@ func (r *eventsRepository) Create(event *domain.Events) (*domain.Events, error) 
 		return nil, err
 	}
 	return mapEventsDbModelToDomain(nEvent), nil
+}
+func (r *eventsRepository) Update(event *domain.Events) (*domain.Events, error) {
+	eventToUpdate := mapDomainToEventDbModel(event)
+
+	err := r.coll.UpdateReturning(eventToUpdate)
+	if err != nil {
+		return nil, fmt.Errorf("userRepository UpdateUser: %w", err)
+	}
+
+	return mapEventsDbModelToDomain(eventToUpdate), nil
+}
+
+func (r *eventsRepository) Delete(eventId int64) error {
+	var event events
+	err := r.coll.Find(isDeleted(db.Cond{"id": eventId}, false)).One(&event)
+	if err != nil {
+		return fmt.Errorf("eventsRepository Delete: %w", err)
+	}
+	err = r.coll.Find(eventId).Update(map[string]interface{}{"deletedDate": time.Now()})
+	if err != nil {
+		return fmt.Errorf("eventsRepository DeleteEvent: %w", err)
+	}
+
+	return nil
 }
 
 func mapEventsDbModelToDomainCollection(events []events) []domain.Events {

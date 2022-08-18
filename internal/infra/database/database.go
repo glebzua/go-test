@@ -51,7 +51,7 @@ type dbQueryParams struct {
 
 func (q *dbQueryParams) ApplyToResult(r db.Result) db.Result {
 	if !q.ShowDeleted {
-		r = r.And(db.Cond{"deleted_date IS": nil})
+		r = r.And(db.Cond{"deletedDate IS": nil})
 	}
 	if q.PageSize != 0 {
 		r = r.Paginate(q.PageSize).Page(q.Page)

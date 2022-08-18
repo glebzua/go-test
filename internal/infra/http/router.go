@@ -38,7 +38,7 @@ func Router(
 			apiRouter.Group(func(apiRouter chi.Router) {
 				apiRouter.Use(authMiddleware)
 				AdminEventRoutes(&apiRouter, eventController)
-				UserRouter(&apiRouter, userController)
+				AdminUserRouter(&apiRouter, userController)
 				apiRouter.Handle("/*", NotFoundJSON())
 			})
 			apiRouter.Post(
@@ -61,32 +61,45 @@ func Router(
 			apiRouter.Handle("/*", NotFoundJSON())
 		})
 	})
+
 	router.Group(func(apiRouter chi.Router) {
 		apiRouter.Use(middleware.RedirectSlashes, cors.Handler(cors.Options{
-			AllowedMethods: []string{"GET"},
+			AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
 		}))
 		apiRouter.Route("/m", func(apiRouter chi.Router) {
 			apiRouter.Group(func(apiRouter chi.Router) {
 				apiRouterModeratorOnly := apiRouter.With(middlewares.ModeratorOnly)
 				apiRouterModeratorOnly.Get(
-					"/all/{page}",
+					"/events/all/{page}",
 					eventController.FindAll(),
 				)
 				apiRouterModeratorOnly.Get(
-					"/upcoming/{page}",
+					"/events/upcoming/{page}",
 					eventController.FindUpcoming(),
 				)
 				apiRouterModeratorOnly.Get(
-					"/{id}",
+					"/events/{id}",
 					eventController.FindOne(),
 				)
 				apiRouterModeratorOnly.Post(
-					"/",
+					"/events",
 					eventController.Create(),
 				)
+				apiRouterModeratorOnly.Put(
+					"/events/{id}",
+					eventController.Update(),
+				)
+				apiRouterModeratorOnly.Delete(
+					"/events/{id}",
+					eventController.Delete(),
+				)
+
 				apiRouter.Handle("/*", NotFoundJSON())
 			})
-
+			apiRouter.Post(
+				"/user/login",
+				userController.LogIn(),
+			)
 			apiRouter.Handle("/*", NotFoundJSON())
 		})
 	})
@@ -95,21 +108,31 @@ func Router(
 
 func AdminEventRoutes(router *chi.Router, eventController *controllers.EventsController) {
 	(*router).Route("/events", func(apiRouter chi.Router) {
-		apiRouter.Get(
+		apiRouterAdminOnly := apiRouter.With(middlewares.AdminOnly)
+		apiRouterAdminOnly.Get(
 			"/all/{page}",
 			eventController.FindAll(),
 		)
-		apiRouter.Get(
+		apiRouterAdminOnly.Get(
 			"/upcoming/{page}",
 			eventController.FindUpcoming(),
 		)
-		apiRouter.Get(
+		apiRouterAdminOnly.Get(
 			"/{id}",
 			eventController.FindOne(),
 		)
-		apiRouter.Post(
+		apiRouterAdminOnly.Put(
+			"/{id}",
+			eventController.Update(),
+		)
+		apiRouterAdminOnly.Post(
 			"/",
 			eventController.Create(),
+		)
+
+		apiRouterAdminOnly.Delete(
+			"/",
+			eventController.Delete(),
 		)
 
 	})
@@ -132,24 +155,12 @@ func GuestEventRoutes(router *chi.Router, eventController *controllers.EventsCon
 	})
 }
 
-func UserRouter(router *chi.Router, userController *controllers.UserController) {
-	(*router).Route("/user", func(apiRouter chi.Router) {
-		apiRouter.Get(
-			"/",
-			userController.PaginateAll(),
-		)
-		apiRouter.Get(
-			"/profile",
-			userController.FindOne(),
-		)
-		apiRouter.Get(
-			"/checkauth",
-			userController.CheckAuth(),
-		)
+func AdminUserRouter(router *chi.Router, userController *controllers.UserController) {
+	(*router).Route("/users", func(apiRouter chi.Router) {
 		apiRouterAdminOnly := apiRouter.With(middlewares.AdminOnly)
-		apiRouterAdminOnly.Post(
-			"/",
-			userController.Create(),
+		apiRouterAdminOnly.Get(
+			"/{id}",
+			userController.FindOneById(),
 		)
 		apiRouterAdminOnly.Put(
 			"/{id}",
@@ -158,6 +169,22 @@ func UserRouter(router *chi.Router, userController *controllers.UserController) 
 		apiRouterAdminOnly.Delete(
 			"/{id}",
 			userController.Delete(),
+		)
+		apiRouterAdminOnly.Post(
+			"/",
+			userController.Create(),
+		)
+		apiRouterAdminOnly.Get(
+			"/",
+			userController.PaginateAll(),
+		)
+		apiRouterAdminOnly.Get(
+			"/profile/{id}",
+			userController.FindOne(),
+		)
+		apiRouterAdminOnly.Get(
+			"/checkauth",
+			userController.CheckAuth(),
 		)
 	})
 }

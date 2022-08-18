@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi"
 )
 
 const BEARER = "Bearer "
@@ -53,7 +53,13 @@ func (c *UserController) Create() http.HandlerFunc {
 
 func (c *UserController) FindOne() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
+		id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+		if err != nil {
+			log.Print("eventsController FindOne ParseInt", err)
+			badRequest(w, err)
+			return
+		}
+		log.Print(id)
 		authHeader := r.Header.Get("Authorization")
 		token := authHeader[len(BEARER):]
 
@@ -79,7 +85,39 @@ func (c *UserController) FindOne() http.HandlerFunc {
 
 	}
 }
+func (c *UserController) FindOneById() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		params, err := parseUrlQuery(r)
+		if err != nil {
+			log.Println(err)
+			badRequest(w, err)
+			return
+		}
+		id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+		if err != nil {
+			log.Print("userController FindOneById ParseInt", err)
+			badRequest(w, err)
+			return
+		}
+		authHeader := r.Header.Get("Authorization")
+		token := authHeader[len(BEARER):]
 
+		_, err = (*c.tokenService).VerifyToken(token)
+		if err != nil {
+			log.Print(err)
+			return
+		}
+
+		usr, err := (*c.userService).FindOne(id, params)
+		if err != nil {
+			log.Print(err)
+			internalServerError(w, err)
+			return
+		}
+		success(w, resources.MapDomainToUserDto(usr))
+
+	}
+}
 func (c *UserController) PaginateAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		params, err := parseUrlQuery(r)
@@ -102,20 +140,18 @@ func (c *UserController) PaginateAll() http.HandlerFunc {
 
 func (c *UserController) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user, err := c.userUpdateValidator.ValidateAndMap(r)
-		if err != nil {
-			log.Print(err)
-			badRequest(w, err)
-			return
-		}
-
 		id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 		if err != nil {
 			log.Print(err)
 			badRequest(w, err)
 			return
 		}
-
+		user, err := c.userUpdateValidator.ValidateAndMap(r)
+		if err != nil {
+			log.Print(err)
+			badRequest(w, err)
+			return
+		}
 		user.Id = id
 		updatedUser, err := (*c.userService).Update(user)
 		if err != nil {
