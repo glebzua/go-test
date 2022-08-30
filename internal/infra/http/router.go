@@ -45,6 +45,10 @@ func Router(
 				"/user/login",
 				userController.LogIn(),
 			)
+			apiRouter.Get(
+				"/user/checkauth",
+				userController.CheckAuth(),
+			)
 			apiRouter.Handle("/*", NotFoundJSON())
 		})
 	})

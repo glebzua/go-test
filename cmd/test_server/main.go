@@ -21,6 +21,10 @@ import (
 func main() {
 
 	var conf = config.GetConfiguration()
+	err := database.Migrate(conf)
+	if err != nil {
+		log.Fatalf("Unable to apply migrations: %q\n", err)
+	}
 
 	sess, err := postgresql.Open(
 		postgresql.ConnectionURL{
